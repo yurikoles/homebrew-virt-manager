@@ -3,26 +3,23 @@ class VirtManager < Formula
 
   desc "App for managing virtual machines"
   homepage "https://virt-manager.org/"
-  url "https://virt-manager.org/download/sources/virt-manager/virt-manager-2.2.1.tar.gz"
-  sha256 "cfd88d66e834513e067b4d3501217e21352fadb673103bacb9e646da9f029a1b"
-  revision 4
+  url "https://releases.pagure.org/virt-manager/virt-manager-3.2.0.tar.gz"
+  sha256 "2b6fe3d90d89e1130227e4b05c51e6642d89c839d3ea063e0e29475fd9bf7b86"
 
+  depends_on "docutils" => :build
   depends_on "intltool" => :build
   depends_on "pkg-config" => :build
 
   depends_on "adwaita-icon-theme"
-  depends_on "gtk+3"
   depends_on "gtk-vnc"
   depends_on "gtksourceview4"
-  depends_on "hicolor-icon-theme"
   depends_on "libosinfo"
-  depends_on "libvirt"
   depends_on "libvirt-glib"
   depends_on "libxml2" # need python3 bindings
   depends_on "osinfo-db"
   depends_on "py3cairo"
   depends_on "pygobject3"
-  depends_on "python"
+  depends_on "python@3.10"
   depends_on "spice-gtk"
   depends_on "vte3"
 
@@ -56,9 +53,6 @@ class VirtManager < Formula
     sha256 "b8aa58f8cf793ffd8782d3d8cb19e66ef36f7aba4353eec859e74678b01b07a7"
   end
 
-  # virt-manager doesn't prompt for password on macOS unless --no-fork flag is provided
-  patch :DATA
-
   def install
     venv = virtualenv_create(libexec, "python3")
     venv.pip_install resources
@@ -75,7 +69,7 @@ class VirtManager < Formula
 
     # install virt-manager commands with PATH set to Python virtualenv environment
     bin.install Dir[libexec/"bin/virt-*"]
-    bin.env_script_all_files(libexec/"bin", :PATH => "#{libexec}/bin:$PATH")
+    bin.env_script_all_files(libexec/"bin", PATH: "#{libexec}/bin:$PATH")
 
     share.install Dir[libexec/"share/man"]
     share.install Dir[libexec/"share/glib-2.0"]
@@ -93,18 +87,3 @@ class VirtManager < Formula
     system "#{bin}/virt-manager", "--version"
   end
 end
-__END__
-diff --git a/virt-manager b/virt-manager
-index 15d5109..8ee305a 100755
---- a/virt-manager
-+++ b/virt-manager
-@@ -151,7 +151,8 @@ def parse_commandline():
-         help="Print debug output to stdout (implies --no-fork)",
-         default=False)
-     parser.add_argument("--no-fork", action="store_true",
--        help="Don't fork into background on startup")
-+        help="Don't fork into background on startup",
-+        default=True)
-
-     parser.add_argument("--show-domain-creator", action="store_true",
-         help="Show 'New VM' wizard")
